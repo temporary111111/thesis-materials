@@ -20,3 +20,11 @@ literature
 4. reproduction / conclusion 
 
 
+
+| Specific objective                                                                                                       | Simpleng ibig sabihin                                                          |
+| ------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------ |
+| **1. To evaluate the classification performance of non-semantic OCR-derived page-level layout when used independently.** | Gaano kahusay mag-classify kung layout information lang ang ginagamit?         |
+| **2. To compare the classification performance of visual-only and combined visual–layout approaches on TextRich.**       | May dagdag bang tulong kapag isinama ang layout sa visual detector?            |
+| **3. To examine how these performance differences vary across TextRich’s content categories.**                           | Pareho ba ang resulta sa iba’t ibang uri ng images, o nakadepende sa category? |
+
+
