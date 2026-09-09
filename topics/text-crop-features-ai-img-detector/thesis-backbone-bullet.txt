@@ -1,0 +1,637 @@
+Narito ang **current complete backbone ng thesis natin**, naka-bullet style at nakabase sa pinakahuling focused direction natin. Hindi na natin gagawing pangunahing topic ang text-density curse o TIQA.
+
+# Thesis Backbone
+
+## 1. Working Title
+
+* **Lightweight OCR-Guided Text-Crop Feature Analysis for Detecting AI-Generated Text-Rich Images**
+
+Alternative:
+
+* **A Lightweight OCR-Guided Text-Crop Feature Approach for AI-Generated Text-Rich Image Detection**
+
+## 2. Main Problem
+
+* Nahihirapan ang general AI-image detectors sa text-rich images.
+* Karaniwang sinusuri ng detector ang buong image.
+* Maaaring may useful detection patterns mismo sa text regions, tulad ng:
+
+  * irregular strokes;
+  * fragmented characters;
+  * inconsistent spacing;
+  * abnormal edges;
+  * unusual OCR behavior.
+* Susuriin ng thesis kung makakatulong ang numerical features na kinuha mismo sa OCR-detected text crops.
+
+## 3. Main Purpose
+
+* Gumawa at mag-evaluate ng isang lightweight detector na:
+
+  * gumagamit ng OCR upang mahanap ang text;
+  * kumukuha ng measurable features mula sa text crops;
+  * pinagsasama ang crop features per image;
+  * kino-classify ang buong image bilang **real** o **AI-generated**.
+
+## 4. Main Research Question
+
+* **Can OCR-guided text-crop features distinguish AI-generated text-rich images from real text-rich images better than simple text-density-based baselines?**
+
+Sa simple Filipino:
+
+* May useful patterns ba sa mismong text crops na makakatulong sa pag-detect kung real o AI-generated ang buong image?
+* Mas maganda ba ang text-crop features kaysa sa pagbabase lamang sa dami o laki ng text?
+
+## 5. Specific Objectives
+
+* Makahanap ng text regions sa text-rich images gamit ang OCR.
+* Ma-extract ang text crops mula sa OCR bounding boxes.
+* Ma-convert ang visual properties ng text crops into numerical features.
+* Ma-aggregate ang crop features upang magkaroon ng isang feature vector bawat image.
+* Makapagsanay ng lightweight classifiers para sa real-versus-AI classification.
+* Maikumpara ang text-specific model sa:
+
+  * majority-class baseline;
+  * text-density-only baseline.
+* Matukoy kung aling text features ang may pinakamalaking contribution sa prediction.
+* Makabuo ng working and reproducible pilot detection pipeline.
+
+## 6. Type of Study
+
+* Experimental and developmental Computer Science study.
+* Binary image classification.
+* Quantitative evaluation.
+* Machine-learning-based, ngunit lightweight at interpretable.
+* Hindi kailangang gumawa ng bagong deep neural network architecture.
+
+## 7. Dataset
+
+* Primary dataset:
+
+  * **TextRich dataset**
+* Current location:
+
+```text
+C:\Users\dev\Desktop\text-rich-ai-image-detector\data\
+```
+
+* Kailangan itong i-audit muna upang malaman:
+
+  * exact folder structure;
+  * total real images;
+  * total AI-generated images;
+  * available categories;
+  * source/generator information;
+  * existing train/test split;
+  * possible duplicate or related images.
+
+### Planned dataset scope
+
+* Pumili muna ng isang consistent image category.
+* Preferred initial category:
+
+  * commercial posters;
+  * advertisements;
+  * or pinakamalinaw na equivalent category sa TextRich dataset.
+* Initial pilot target:
+
+  * approximately 100 real images;
+  * approximately 100 AI-generated images.
+* Maaaring dagdagan para sa final experiment depende sa:
+
+  * available images;
+  * processing time;
+  * OCR success rate;
+  * actual class distribution.
+
+### Important dataset rule
+
+* Hindi kailangang pantayin ang low, medium, at high text density dahil hindi text-density study ang main focus.
+* Pero kailangang i-check na hindi sobrang magkaiba ang density ng real at AI classes.
+* Kung puro maraming text ang AI at kaunti lang ang text sa real, baka text amount lang ang matutunan ng model.
+* Huwag gumawa o manghula ng labels.
+* Ang labels ay dapat galing sa verified TextRich metadata o folder structure.
+
+## 8. Unit of Analysis
+
+* **Main unit:** whole text-rich image.
+* **Intermediate unit:** OCR-detected text crop.
+* Ang individual crops ay hindi final prediction.
+* Ang crop features ay pagsasama-samahin upang magbigay ng isang prediction para sa buong image.
+
+## 9. Complete Processing Pipeline
+
+* Input text-rich image.
+* Detect text using EasyOCR.
+* Obtain:
+
+  * OCR bounding box;
+  * recognized text;
+  * OCR confidence.
+* Crop the detected text region.
+* Straighten angled text through perspective transformation.
+* Convert the crop to grayscale.
+* Generate a foreground/text mask.
+* Extract numerical features from every crop.
+* Save crop-level feature values.
+* Aggregate features from all crops belonging to one image.
+* Train the classifier using the image-level features.
+* Predict:
+
+  * `0 = real`;
+  * `1 = AI-generated`.
+* Evaluate the prediction results.
+* Generate the final pilot report.
+
+## 10. OCR Method
+
+* Planned OCR tool:
+
+  * **EasyOCR**
+* OCR outputs to use:
+
+  * detected text;
+  * confidence score;
+  * four-point bounding box.
+* The OCR is used primarily to **locate text regions**, not to determine whether the text content is true or meaningful.
+
+## 11. Text-Crop Features
+
+Mayroon tayong **10 conceptual feature groups**, pero maaaring maging **11 numerical columns** dahil dalawang values ang contour solidity.
+
+### OCR-related feature
+
+* **OCR confidence**
+
+  * Confidence ng EasyOCR sa recognized text.
+  * Halimbawa: `0.91`.
+  * Maaaring bumaba kapag malformed o mahirap basahin ang characters.
+
+### Pixel-distribution feature
+
+* **Foreground text ratio**
+
+  * Ratio ng text pixels sa total pixels ng crop.
+  * Formula:
+
+```text
+foreground pixels ÷ total crop pixels
+```
+
+### Edge feature
+
+* **Edge density**
+
+  * Dami ng detected edge pixels kumpara sa total pixels.
+  * Sinusukat ang complexity ng letter boundaries.
+  * Maaaring gamitin ang Canny edge detector.
+
+### Contrast feature
+
+* **Foreground-background contrast**
+
+  * Difference ng average brightness ng text at background.
+  * Formula:
+
+```text
+|average foreground intensity − average background intensity|
+```
+
+### Fragmentation feature
+
+* **Connected components per character**
+
+  * Dami ng separate visual components kumpara sa bilang ng OCR-recognized characters.
+  * Formula:
+
+```text
+number of connected components ÷ number of recognized characters
+```
+
+### Noise or small-fragment feature
+
+* **Small-component ratio**
+
+  * Sinusukat kung gaano karami ang maliliit na visual fragments.
+  * Maaaring magrepresent ng:
+
+    * broken strokes;
+    * dots;
+    * noise;
+    * malformed character parts.
+
+### Stroke-thickness feature
+
+* **Mean text thickness**
+
+  * Average estimated thickness ng text strokes.
+  * Kinukuha gamit ang distance transform.
+
+### Stroke-consistency feature
+
+* **Thickness coefficient of variation**
+
+  * Sinusukat kung consistent o pabago-bago ang thickness ng strokes.
+  * Formula:
+
+```text
+standard deviation of thickness ÷ mean thickness
+```
+
+### Spacing feature
+
+* **Gap variability**
+
+  * Sinusukat ang inconsistency ng spaces sa pagitan ng detected components o characters.
+  * Mas mataas na value means mas irregular ang spacing.
+
+### Shape features
+
+* **Mean contour solidity**
+
+  * Average solidity ng detected text shapes.
+  * Formula:
+
+```text
+contour area ÷ convex hull area
+```
+
+* **Contour solidity standard deviation**
+
+  * Sinusukat kung gaano ka-consistent ang solidity ng text shapes sa crop.
+
+### Exact number of numerical crop features
+
+Kapag magkahiwalay ang mean at standard deviation ng solidity:
+
+* 1 OCR confidence
+* 1 foreground ratio
+* 1 edge density
+* 1 contrast
+* 1 connected components per character
+* 1 small-component ratio
+* 1 mean thickness
+* 1 thickness variation
+* 1 gap variability
+* 1 solidity mean
+* 1 solidity standard deviation
+
+**Total: 11 scalar feature columns.**
+
+Kailangang itama sa documentation kung sinasabi nitong “10 features.” Mas tamang sabihin:
+
+> Ten feature groups represented by eleven numerical feature values.
+
+## 12. Text Mask Preparation
+
+Bago makuha ang karamihan ng features:
+
+* Convert crop to grayscale.
+* Apply thresholding.
+* Separate:
+
+  * text or foreground pixels;
+  * background pixels.
+* Dapat suportahan ang:
+
+  * dark text on light background;
+  * light text on dark background.
+* Hindi dapat automatic na lahat ng dark pixels ay text dahil may colored at complex backgrounds ang posters.
+
+## 13. Crop-Level Output
+
+Bawat detected crop ay magkakaroon ng record tulad nito:
+
+* parent image filename;
+* crop ID;
+* recognized text;
+* character count;
+* OCR confidence;
+* crop coordinates;
+* 11 feature values;
+* valid/invalid status;
+* reason kung bakit invalid;
+* class label.
+
+Example:
+
+```text
+poster_001.jpg
+crop_03
+SALE 50%
+0.91 OCR confidence
+0.15 foreground ratio
+0.07 edge density
+...
+real
+```
+
+## 14. Image-Level Aggregation
+
+Maaaring maraming text crops ang isang image. Kaya kukunin ang summary ng crop features.
+
+For every feature, calculate:
+
+* mean;
+* standard deviation;
+* minimum.
+
+Halimbawa para sa OCR confidence:
+
+* mean OCR confidence;
+* standard deviation of OCR confidence;
+* minimum OCR confidence.
+
+Kung 11 crop features at tatlong aggregation statistics:
+
+```text
+11 × 3 = 33 aggregated image-level features
+```
+
+Maaari ring itago bilang quality-control information ang:
+
+* number of text crops;
+* total recognized characters;
+* total text area;
+* percentage of image covered by text;
+* OCR failure count.
+
+Hindi agad dapat isama ang mga ito sa proposed model dahil maaaring matutunan lamang ng model ang text density. Gagamitin muna sila sa baseline at dataset checking.
+
+## 15. Baselines
+
+### Baseline 1: Majority-class baseline
+
+* Palaging pipiliin ang pinakamaraming class.
+* Halimbawa, kung mas maraming real images, palaging `real` ang prediction.
+* Ito ang pinakamababang comparison.
+
+### Baseline 2: Density-only Logistic Regression
+
+Features:
+
+* total recognized character count;
+* total OCR-detected text area.
+
+Purpose:
+
+* Malaman kung text amount lang ba ang dahilan ng prediction.
+* Dapat malampasan ito ng proposed text-specific feature model.
+
+## 16. Proposed Models
+
+### Main interpretable model
+
+* **Logistic Regression using text-specific features**
+* Simple at madaling ipaliwanag.
+* Magagamit upang makita ang direction at weight ng features.
+
+### Second model
+
+* **Random Forest using text-specific features**
+* Kayang makakita ng nonlinear relationships.
+* Magagamit para sa feature importance.
+
+### Four primary comparisons
+
+* Majority-class baseline.
+* Density-only Logistic Regression.
+* Text-specific Logistic Regression.
+* Text-specific Random Forest.
+
+## 17. Optional GPU Experiment
+
+Kung may sapat na oras:
+
+* Gumamit ng pretrained lightweight CNN:
+
+  * ResNet18;
+  * EfficientNet-B0.
+* Huwag mag-train from scratch.
+* Gamitin ang GPU para sa:
+
+  * CNN feature extraction;
+  * CNN inference;
+  * lightweight fine-tuning.
+* Possible additional comparisons:
+
+  * handcrafted text features only;
+  * learned CNN crop features only;
+  * handcrafted plus CNN features.
+
+Hindi ito kailangang maging pangunahing component. Ang core thesis ay maaari nang tumayo gamit ang handcrafted text-specific features.
+
+## 18. Hardware Plan
+
+* OCR and OpenCV:
+
+  * maaaring CPU-based.
+* CNN feature extraction and training:
+
+  * GPU kapag available.
+* Automatic device selection:
+
+```python
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+```
+
+* Dapat i-report:
+
+  * GPU model;
+  * available VRAM;
+  * batch size;
+  * processing time;
+  * whether CUDA was successfully used.
+
+## 19. Training and Validation
+
+* Use **stratified 5-fold cross-validation**.
+* Sa bawat fold:
+
+  * training data;
+  * separate validation/test fold.
+* Panatilihin ang proportion ng real at AI images.
+* Gumamit ng fixed random seed para reproducible.
+* Huwag paghihiwalayin sa train at test ang crops mula sa parehong parent image.
+* Ang splitting ay dapat gawin sa **image/source level**, hindi sa crop level.
+* Kung may related images mula sa parehong source, gamitin ang group-aware splitting.
+
+## 20. Evaluation Metrics
+
+* Balanced accuracy
+* Precision
+* Recall
+* F1-score
+* ROC-AUC
+* Confusion matrix
+* Mean performance across five folds
+* Standard deviation across five folds
+* Training and processing time
+* OCR detection success rate
+
+Balanced accuracy ang magandang main metric kung hindi pantay ang class distribution.
+
+## 21. Feature Analysis
+
+* Gumamit ng permutation importance para matukoy kung aling features ang nakakatulong.
+* Maaaring gumawa ng ablation study:
+
+  * alisin ang isang feature group;
+  * i-train ulit ang model;
+  * tingnan kung bumaba o tumaas ang performance.
+* Layunin nitong sagutin:
+
+  * Aling text properties ang pinakamalaking contribution?
+  * May useless o harmful features ba?
+
+## 22. Visual Debugging Requirements
+
+Para masigurong tama ang execution, mag-save ng examples ng:
+
+* original image;
+* OCR bounding boxes;
+* perspective-corrected crop;
+* grayscale crop;
+* binary text mask;
+* edge map;
+* connected-component overlay;
+* feature values ng corresponding crop.
+
+Mahalaga ito dahil posibleng tama ang formula pero mali ang mask o OCR crop.
+
+## 23. Expected System Outputs
+
+* Dataset manifest CSV.
+* Crop-level features CSV.
+* Image-level aggregated features CSV.
+* OCR cache.
+* Extracted text-crop images.
+* Debug visualization samples.
+* Model metrics.
+* Confusion matrices.
+* Feature-importance plots.
+* Pilot report in Markdown.
+* Saved trained model.
+* Prediction function or simple prototype.
+
+## 24. Relationship to TIQA/ANTIQA
+
+* Kinikilala na gumagamit din ang TIQA/ANTIQA ng OCR-localized text regions.
+* Hindi natin sasabihing tayo ang unang gumamit ng text crops.
+* Ang TIQA ay pangunahing nakatuon sa **text-image quality assessment**.
+* Ang thesis natin ay nakatuon sa:
+
+  * real-versus-AI classification;
+  * lightweight handcrafted text features;
+  * interpretable comparison;
+  * practical implementation;
+  * TextRich dataset evaluation.
+* Gagamitin ang TIQA bilang related work at methodological foundation.
+
+## 25. Main Contribution
+
+* Isang complete and reproducible OCR-guided detection pipeline.
+* Isang defined set ng interpretable text-specific features.
+* Empirical comparison laban sa density-only baseline.
+* Pagkilala sa text features na may pinakamalaking predictive value.
+* Lightweight implementation na kayang tumakbo sa consumer laptop.
+* Working prototype para sa detection ng AI-generated text-rich images.
+* Documented limitations at failure cases.
+
+## 26. Success Criterion
+
+Promising ang approach kung:
+
+* mas mataas at consistent ang performance ng text-specific models kaysa majority baseline;
+* mas mataas ang performance kaysa density-only model;
+* hindi lamang isang fold ang magandang resulta;
+* reasonable ang standard deviation across folds;
+* may ilang features na may consistent importance;
+* valid ang OCR crops at masks sa manual inspection.
+
+Kung hindi tumaas ang performance, hindi ibig sabihin na walang saysay ang thesis. Maaari pa ring maging valid ang finding na:
+
+> The selected handcrafted text-crop features did not provide sufficient discriminative information beyond text density under the evaluated conditions.
+
+Pero mas magiging mahina ang detector contribution, kaya pilot testing muna bago i-finalize ang thesis proposal.
+
+## 27. Main Risks and Controls
+
+* **OCR errors**
+
+  * Control: inspect OCR crops and report failure rate.
+
+* **Incorrect foreground masks**
+
+  * Control: support both light and dark text; save mask samples.
+
+* **Dataset bias**
+
+  * Control: use one comparable image domain and inspect class distributions.
+
+* **Data leakage**
+
+  * Control: split by parent image or source, never randomly by crop.
+
+* **Model learning text density only**
+
+  * Control: compare against density-only baseline.
+
+* **Class imbalance**
+
+  * Control: report class counts and use balanced accuracy.
+
+* **Too few valid text crops**
+
+  * Control: define minimum OCR confidence and minimum crop size.
+
+* **Overfitting**
+
+  * Control: cross-validation, simple models, and limited feature count.
+
+* **Features affected by image resolution**
+
+  * Control: normalize appropriate measurements by crop size, character count, or text area.
+
+* **Dataset-specific results**
+
+  * Control: clearly state that conclusions apply to the selected TextRich subset.
+
+## 28. Excluded From the Current Scope
+
+* Compression robustness.
+* Screenshot detection.
+* Social-media reposting effects.
+* Multilingual comparison.
+* Filipino-versus-English analysis.
+* Identification of the specific AI generator.
+* Text readability or aesthetic quality scoring.
+* Detection of misinformation.
+* OCR correction or language-model analysis.
+* Training a large CNN from scratch.
+* Claiming that the study solves all forms of AI-image detection.
+
+## 29. Current Development Status
+
+* Core modular pipeline has been created.
+* Ten conceptual feature groups have been implemented.
+* Possible 11 scalar feature columns need clarification.
+* OCR detection and crop extraction are implemented.
+* Aggregation and classifiers are implemented.
+* Evaluation and reporting modules are implemented.
+* GPU detection is implemented.
+* **33/33 unit tests are passing.**
+* Actual TextRich dataset has not yet been processed.
+* The next step is:
+
+  * inspect dataset structure;
+  * create verified manifest;
+  * run 10-real/10-AI smoke test;
+  * inspect visual outputs;
+  * run the larger pilot;
+  * interpret results.
+
+## Pinakasimpleng One-Sentence Backbone
+
+> Gumagamit ang study ng OCR upang kunin ang text regions mula sa real at AI-generated text-rich images, kino-convert ang visual characteristics ng mga text crop into numerical features, at sinusuri kung makakatulong ang mga feature na ito sa lightweight real-versus-AI classification beyond simple text-density information.
+
+Ito ang pinakahuling narrowed backbone natin: **text-crop feature detection ang core**, habang optional lamang ang CNN at hindi na sentro ang density reweighting, compression, screenshots, o TIQA replication.
