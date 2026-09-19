@@ -14,7 +14,7 @@ from xml.sax.saxutils import escape
 
 
 SOURCE = Path("CHAPTER 2 - Review of Related Literature and Studies - Draft.md")
-OUTPUT = Path("CHAPTER 2 - Review of Related Literature and Studies - Draft.docx")
+OUTPUT = Path("CHAPTER 2 - Review of Related Literature and Studies - AUDITED.docx")
 
 W = "http://schemas.openxmlformats.org/wordprocessingml/2006/main"
 
